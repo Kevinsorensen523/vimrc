@@ -27,3 +27,14 @@ This Vim configuration is purely subjective. The goal of it is to get comfortabl
 - Ctrl-k: Move to the pane above
 - Ctrl-l: Move to the right pane
 - Ctrl-\: Move to the previous pane
+
+### Nvim Customization
+
+#### Create a React Native Component :
+```sh
+  :CreateComponent file.js / file.jsx / file.ts / file.tsx
+```
+or inside folder
+```sh
+  :CreateComponent folder/file.extension
+``` 
