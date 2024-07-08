@@ -20,10 +20,43 @@ let g:loaded_netrwPlugin = 1
 " Optionally enable 24-bit color
 set termguicolors
 
+" Set tab width to 2 spaces
+set tabstop=2
+set shiftwidth=2
+set expandtab
+
+" Enable auto indent
+set autoindent
+set smartindent
+
+" Set tab width to 2 spaces for JavaScript and TypeScript files
+autocmd FileType javascript setlocal tabstop=2 shiftwidth=2 expandtab
+autocmd FileType typescript setlocal tabstop=2 shiftwidth=2 expandtab
+autocmd FileType jsx setlocal tabstop=2 shiftwidth=2 expandtab
+autocmd FileType tsx setlocal tabstop=2 shiftwidth=2 expandtab
+
+" Optionally set the tab width for other file types
+autocmd FileType html setlocal tabstop=2 shiftwidth=2 expandtab
+autocmd FileType css setlocal tabstop=2 shiftwidth=2 expandtab:w
+
+
+" Set line numbers
+set number
+
+" Enable syntax highlighting
+syntax on
+
+" Enable file type detection and plugin functionality
+filetype plugin indent on
+
 " Initialize vim-plug
 call plug#begin('~/.local/share/nvim/plugged')
 
+" Add vim-sleuth for automatic indentation detection
+Plug 'tpope/vim-sleuth'
 Plug 'ojroques/vim-oscyank'
+Plug 'preservim/nerdtree'
+
 " Theme plugin
 Plug 'morhetz/gruvbox'
 Plug 'dracula/vim', { 'as': 'dracula' }
@@ -51,6 +84,7 @@ Plug 'windwp/nvim-autopairs'
 
 " Treesitter and autotag plugin for automatic closing of HTML tags
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'nvim-treesitter/nvim-treesitter-textobjects'
 Plug 'windwp/nvim-ts-autotag'
 
 call plug#end()
@@ -189,7 +223,7 @@ nmap <silent> ]g <Plug>(coc-diagnostic-next)
 nnoremap <silent> K :call <SID>show_documentation()<CR>
 
 function! s:show_documentation()
-  if (index(['vim','help'], &filetype) >= 0)
+  if (index(['vim','help'], &filetype) >= 1)
     execute 'h '.expand('<cword>')
   elseif (coc#rpc#ready())
     call CocActionAsync('doHover')
@@ -232,4 +266,45 @@ require'nvim-treesitter.configs'.setup {
 }
 EOF
 
+function! CreateReactNativeComponent(name_with_ext)
+  " Split the input into name and extension
+  let [l:name, l:ext] = split(a:name_with_ext, '\.')
+
+  " Reconstruct the full file path
+  let l:file = l:name . '.' . l:ext
+
+  if !filereadable(l:file)
+    " Create directory if it doesn't exist
+    call mkdir(fnamemodify(l:file, ':h'), 'p')
+
+    " Determine the component name from the file name
+    let l:component_name = fnamemodify(l:name, ':t')
+
+    " Write the component template to the file
+    call writefile([
+          \ 'import React from "react";',
+          \ '',
+          \ 'import { View, Text } from "react-native";',
+          \ '',
+          \ 'const ' . l:component_name . ' = () => {',
+          \ '  return (',
+          \ '    <View>',
+          \ '      <Text>' . l:component_name . '</Text>',
+          \ '    </View>',
+          \ '  );',
+          \ '};',
+          \ '',
+          \ 'export default ' . l:component_name . ';'
+          \ ], l:file)
+    execute 'edit ' . l:file
+  else
+    echo "File already exists: " . l:file
+  endif
+endfunction
+
+function! CreateComponentComplete(ArgLead, CmdLine, CursorPos)
+  return ['.js', '.jsx', '.ts', '.tsx']
+endfunction
+
+command! -nargs=1 -complete=customlist,CreateComponentComplete CreateComponent call CreateReactNativeComponent(<f-args>)
 
